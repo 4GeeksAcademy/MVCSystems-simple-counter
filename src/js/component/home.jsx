@@ -5,27 +5,28 @@ const Home = () => {
   const [inputHours, setInputHours] = useState(0);
   const [inputMinutes, setInputMinutes] = useState(0);
   const [inputSeconds, setInputSeconds] = useState(0);
-  const [remainingTime, setRemainingTime] = useState(0);
-  const [targetTime, setTargetTime] = useState(0);
+  const [elapsedTime, setElapsedTime] = useState(0); // Inicializar en 0 segundos
   const [isRunning, setIsRunning] = useState(false);
+  const [targetTime, setTargetTime] = useState(0); // Tiempo objetivo
   const intervalRef = useRef(null);
 
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
-        setRemainingTime((prev) => {
-          if (prev <= 1) {
+        setElapsedTime((prev) => {
+          if (prev < targetTime) {
+            return prev + 1;
+          } else {
             clearInterval(intervalRef.current);
             setIsRunning(false);
-            alert("Time's up!");
-            return 0;
+            alert("Tiempo concluido");
+            return prev;
           }
-          return prev - 1;
         });
       }, 1000);
     }
     return () => clearInterval(intervalRef.current);
-  }, [isRunning]);
+  }, [isRunning, targetTime]);
 
   const handleInputChange = (e, setter) => {
     const value = e.target.value;
@@ -40,14 +41,13 @@ const Home = () => {
       parseInt(inputMinutes) * 60 +
       parseInt(inputSeconds);
     setTargetTime(totalSeconds);
-    setRemainingTime(totalSeconds);
-    if (!isRunning && totalSeconds > 0) {
-      setIsRunning(true);
-    }
+    setElapsedTime(0); // Reiniciar el tiempo transcurrido
+    setIsRunning(false); // Detener el temporizador
+    clearInterval(intervalRef.current); // Limpiar el intervalo
   };
 
   const handleStart = () => {
-    if (!isRunning && remainingTime > 0) {
+    if (!isRunning) {
       setIsRunning(true);
     }
   };
@@ -58,60 +58,81 @@ const Home = () => {
   };
 
   const handleResume = () => {
-    if (!isRunning && remainingTime > 0) {
+    if (!isRunning) {
       setIsRunning(true);
     }
   };
 
   const handleRestart = () => {
-    setRemainingTime(targetTime);
+    setElapsedTime(0); // Reiniciar a 0 segundos
     setIsRunning(true);
   };
 
   return (
-    <div className="container text-center vh-100 d-flex flex-column justify-content-center align-items-center bg-light">
-      <h1 className="mb-4">A simple React timer</h1>
-      <div className="d-flex bg-dark text-white p-4 rounded shadow-lg mb-4">
-        <div className="fs-1 mx-2">
-          {Math.floor(remainingTime / 3600)
+    <div
+      className="container text-center vh-100 d-flex flex-column justify-content-center align-items-center"
+      style={{ background: "linear-gradient(to right, #6a11cb, #2575fc)" }}
+    >
+      <h1 className="mb-4 text-white">A Simple React Timer</h1>
+      <div
+        className="d-flex justify-content-center align-items-center bg-dark text-white p-4 rounded shadow-lg mb-4"
+        style={{ width: "350px", borderRadius: "15px" }}
+      >
+        <div
+          className="fs-1 mx-2"
+          style={{ fontSize: "3rem", fontWeight: "bold" }}
+        >
+          {Math.floor(elapsedTime / 3600)
             .toString()
             .padStart(2, "0")}
           :
         </div>
-        <div className="fs-1 mx-2">
-          {Math.floor((remainingTime % 3600) / 60)
+        <div
+          className="fs-1 mx-2"
+          style={{ fontSize: "3rem", fontWeight: "bold" }}
+        >
+          {Math.floor((elapsedTime % 3600) / 60)
             .toString()
             .padStart(2, "0")}
           :
         </div>
-        <div className="fs-1 mx-2">
-          {(remainingTime % 60).toString().padStart(2, "0")}
+        <div
+          className="fs-1 mx-2"
+          style={{ fontSize: "3rem", fontWeight: "bold" }}
+        >
+          {(elapsedTime % 60).toString().padStart(2, "0")}
         </div>
       </div>
 
       <div className="mt-4 d-flex justify-content-center mb-4">
         <button
-          className="btn btn-success mx-2 px-4 py-2"
+          className="btn btn-outline-light mx-2 px-4 py-2"
           onClick={handleStart}
         >
           Start
         </button>
-        <button className="btn btn-danger mx-2 px-4 py-2" onClick={handleStop}>
+        <button
+          className="btn btn-outline-light mx-2 px-4 py-2"
+          onClick={handleStop}
+        >
           Stop
         </button>
         <button
-          className="btn btn-warning mx-2 px-4 py-2"
+          className="btn btn-outline-light mx-2 px-4 py-2"
           onClick={handleResume}
         >
           Resume
         </button>
-        <button className="btn btn-info mx-2 px-4 py-2" onClick={handleRestart}>
+        <button
+          className="btn btn-outline-light mx-2 px-4 py-2"
+          onClick={handleRestart}
+        >
           Restart
         </button>
       </div>
 
       <div className="mt-4">
-        <h3>Set Timer</h3>
+        <h3 className="text-white">Set Timer</h3>
         <div className="d-flex justify-content-center mb-2">
           <input
             type="number"
